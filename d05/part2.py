@@ -49,14 +49,15 @@ lines = data.split('\n')
 stacks, moves = parseData(lines)
 
 print(stacks)
-#print(moves)
 
 for move in moves:
     a, b, c = move
     print(a, b, c)
+    crates = []
     for i in range(a):
-        crate = stacks[b-1].pop()
-        stacks[c-1].append(crate)
+        crates.append(stacks[b-1].pop())
+    crates.reverse()
+    stacks[c-1].extend(crates)
     print(stacks)
 
 top = [stack[-1] for stack in stacks]  
