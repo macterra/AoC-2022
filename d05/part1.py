@@ -1,3 +1,5 @@
+import re
+
 data = """    [D]    
 [N] [C]    
 [Z] [M] [P]
@@ -10,26 +12,40 @@ move 1 from 1 to 2"""
 
 def parseStacks(lines):
     lines.reverse()
-    print(lines)
-    rows = len(lines)
     n = len(lines[0].split('   '))
-    stacks = [[] * n]
-    print(stacks)
-    print(n)
+    stacks = [[] for x in range(n)]
     for line in lines[1:]:
-        print(line)
+        i = 1
+        stack = 0
+        while i < len(line):
+            crate = line[i]
+            if crate != ' ':
+                stacks[stack].insert(0, crate)
+            i += 4
+            stack += 1
+    return stacks
 
 def parseMoves(lines):
-    print(lines)
+    moves = []
+    for line in lines:
+        match = re.search('move (\d+) from (\d+) to (\d+)', line)
+        if match:
+            a = int(match.group(1))
+            b = int(match.group(2))
+            c = int(match.group(3))
+            moves.append((a,b,c))
+    return moves
 
-def parse(lines):
+def parseData(lines):
     i = 0
     while lines[i]:
         i += 1
-    print(i)
-    print(len(lines))
-    parseStacks(lines[:i])
-    parseMoves(lines[i+1:])
+    stacks = parseStacks(lines[:i])
+    moves = parseMoves(lines[i+1:])
+    return stacks, moves
 
 lines = data.split('\n')
-parse(lines)
+stacks, moves = parseData(lines)
+
+print(stacks)
+print(moves)
