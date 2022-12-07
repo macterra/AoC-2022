@@ -69,7 +69,7 @@ def calcSize(fs, sizes):
     sizes.append(size)
     return size
 
-data = open('data', 'r').read()
+#data = open('data', 'r').read()
 lines = data.split('\n')
 fs = parse(lines)
 print(fs)
