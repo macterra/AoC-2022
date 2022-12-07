@@ -69,16 +69,20 @@ def calcSize(fs, sizes):
     sizes.append(size)
     return size
 
-#data = open('data', 'r').read()
+data = open('data', 'r').read()
 lines = data.split('\n')
 fs = parse(lines)
 print(fs)
 sizes = []
-calcSize(fs, sizes)
-print(sizes)
+ts = calcSize(fs, sizes)
+sizes.sort()
+print(sizes, ts)
 
-sum = 0
+unused = 70000000-ts
+required = 30000000-unused
+print(unused, required)
+
 for size in sizes:
-    if size <= 100000:
-        sum += size
-print(sum)
+    if size > required:
+        print(size)
+        break
