@@ -55,9 +55,31 @@ def exZone(y, sensors):
 
     return zone
 
+def makeRegions(sensors):
+    regions = []
+    for sensor in sensors:
+        # print(sensor)
+        s, b = sensor
+        x1, y1 = s
+        x2, y2 = b
+        hd = abs(x1-x2) + abs(y1-y2)
+        lcx = x1 - hd
+        rcx = x1 + hd
+        tcx, tcy = lcx + y1, y1 - lcx # top left corner
+        bcx, bcy = rcx + y1, y1 - rcx # bottom right corner
+        regions.append(((tcx, tcy), (bcx, bcy)))
+        print(s, b, x1, y1, x2, y2, hd)
+        print(y1, lcx, rcx)
+    return regions
+
 #data = open('data', 'r').read()
 lines = data.split('\n')
 sensors = parse(lines)
-zone = exZone(10, sensors)
-#print(zone)
-print(len(zone))
+regions = makeRegions(sensors)
+for region in regions:
+    print(region)
+    c1, c2 = region
+    x1, y1 = c1
+    x2, y2 = c2
+    print(x2-x1, y1-y2)
+
