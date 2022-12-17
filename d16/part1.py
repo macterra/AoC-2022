@@ -34,7 +34,7 @@ def parse(lines):
             print('fail', line)
     return valves
 
-#data = open('data', 'r').read()
+data = open('data', 'r').read()
 lines = data.split('\n')
 valves = parse(lines)
 
@@ -55,30 +55,6 @@ voi = [id for id in valves if valves[id].rate > 0]
 
 print(voi)
 
-from itertools import permutations
-
-def getScore(perm, valves):
-    print(perm)
-    loc = 'AA'
-    t = 30
-    score = 0
-    for id in perm:
-        dis = valves[loc].shortest[id]
-        t -= dis
-        t -= 1
-        score += t * valves[id].rate
-        print("{} : {} -> {} = {} -- {}".format(t, loc, id, dis, score))
-        loc = id
-    return score
-
-def getMax():
-    scores = []
-    for perm in list(permutations(voi)):
-        print(perm)
-        score = getScore(perm, valves)
-        scores.append(score)
-    return max(scores)
-
 def solve(t, loc, valves, voi):
     if t < 1:
         return 0
@@ -96,8 +72,6 @@ def solve(t, loc, valves, voi):
     print("solve {} {} {} {} {}".format(t, loc, voi, release, max))
 
     return release + max
-
-#getScore(['DD', 'BB', 'JJ', 'HH', 'EE', 'CC'], valves)
 
 score = solve(30, 'AA', valves, voi)
 print(score)
