@@ -1,4 +1,5 @@
 import re
+from shortest import shortest_path_lengths
 
 data="""Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
 Valve BB has flow rate=13; tunnels lead to valves CC, AA
@@ -33,9 +34,49 @@ def parse(lines):
             print('fail', line)
     return valves
 
-#data = open('data', 'r').read()
+data = open('data', 'r').read()
 lines = data.split('\n')
 valves = parse(lines)
-for id in valves:
-    print(valves[id])
 
+graph = {}
+for id in valves:
+    graph[id] = valves[id].exits
+    print(valves[id])
+print(graph)
+
+shortest = shortest_path_lengths(graph)
+print(shortest)
+
+for id in valves:
+    valves[id].shortest = shortest[id]
+    print(shortest[id])
+
+voi = [id for id in valves if valves[id].rate > 0]
+
+print(voi)
+
+from itertools import permutations
+
+def getScore(perm, valves):
+    print(perm)
+    loc = 'AA'
+    t = 30
+    score = 0
+    for id in perm:
+        dis = valves[loc].shortest[id]
+        t -= dis
+        t -= 1
+        score += t * valves[id].rate
+        print("{} : {} -> {} = {} -- {}".format(t, loc, id, dis, score))
+        loc = id
+    return score
+
+def getMax():
+    scores = []
+    for perm in list(permutations(voi)):
+        print(perm)
+        score = getScore(perm, valves)
+        scores.append(score)
+    return max(scores)
+
+#getScore(['DD', 'BB', 'JJ', 'HH', 'EE', 'CC'], valves)
