@@ -27,34 +27,6 @@ def parse(lines):
             sensors.append(((int(x1), int(y1)), (int(x2), int(y2))))
     return sensors
 
-def exZone(y, sensors):
-    zone = {}
-    for sensor in sensors:
-        # print(sensor)
-        s, b = sensor
-        x1, y1 = s
-        x2, y2 = b
-        hd = abs(x1-x2) + abs(y1-y2)
-        vd = abs(y - y1)
-        # print(x1, y1, x2, y2, hd, vd)
-        if vd <= hd:
-            x = x1 + vd - hd
-            n = (hd-vd)*2+1
-            for i in range(n):
-                zone[x] = 1                
-                x += 1
-
-    for sensor in sensors:
-        s, b = sensor
-        x1, y1 = s
-        x2, y2 = b
-        if y == y1 and x1 in zone:
-            del zone[x1]
-        if y == y2 and x2 in zone:
-            del zone[x2]
-
-    return zone
-
 def makeRegions(sensors):
     regions = []
     for sensor in sensors:
@@ -68,18 +40,55 @@ def makeRegions(sensors):
         tcx, tcy = lcx + y1, y1 - lcx # top left corner
         bcx, bcy = rcx + y1, y1 - rcx # bottom right corner
         regions.append(((tcx, tcy), (bcx, bcy)))
-        print(s, b, x1, y1, x2, y2, hd)
-        print(y1, lcx, rcx)
+        #print(s, b, x1, y1, x2, y2, hd)
+        #print(y1, lcx, rcx)
     return regions
 
-#data = open('data', 'r').read()
+def locateGaps(regions):
+    n = len(regions)
+    xs = set()
+    ys = set()
+    for i in range(n):
+        r1 = regions[i]
+        c1, c2 = r1
+        x1, y1 = c1
+        x2, y2 = c2
+        for j in range(n):
+            r2 = regions[j]
+            #print(i, j, r1, r2)
+            c3, c4 = r2
+            x3, y3 = c3
+            x4, y4 = c4
+            dx = x3-x2
+            dy = y2-y3
+            if dx == 2:
+                xs.add(x2+1)
+            if dy == 2:
+                ys.add(y3+1)
+    return xs, ys
+
+def isCovered(x, y, regions):
+    for region in regions:
+        #print(x, y, region)
+        c1, c2 = region
+        x1, y1 = c1
+        x2, y2 = c2
+        #print(x1, x, x2, x1 <= x <= x2)
+        #print(y1, y, y2, y1 <= y <= y2)
+        if x1 <= x <= x2 and y2 <= y <= y1:
+            return False
+    return True
+
+data = open('data', 'r').read()
 lines = data.split('\n')
 sensors = parse(lines)
 regions = makeRegions(sensors)
-for region in regions:
-    print(region)
-    c1, c2 = region
-    x1, y1 = c1
-    x2, y2 = c2
-    print(x2-x1, y1-y2)
+xs, ys = locateGaps(regions)
 
+for x in xs:
+    for y in ys:
+        found = isCovered(x,y,regions)
+        if found:
+            x, y = (x-y)>>1, (x+y)>>1
+            freq = x * 4000000 + y
+            print('found', x, y, freq)
