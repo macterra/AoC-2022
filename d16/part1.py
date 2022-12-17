@@ -34,7 +34,7 @@ def parse(lines):
             print('fail', line)
     return valves
 
-data = open('data', 'r').read()
+#data = open('data', 'r').read()
 lines = data.split('\n')
 valves = parse(lines)
 
@@ -79,4 +79,25 @@ def getMax():
         scores.append(score)
     return max(scores)
 
+def solve(t, loc, valves, voi):
+    if t < 1:
+        return 0
+
+    max = 0
+    for id in voi:
+        rest = list(voi)
+        rest.remove(id)
+        dis = valves[loc].shortest[id]
+        score = solve(t-dis-1, id, valves, rest)
+        if score > max:
+            max = score
+
+    release = valves[loc].rate * t
+    print("solve {} {} {} {} {}".format(t, loc, voi, release, max))
+
+    return release + max
+
 #getScore(['DD', 'BB', 'JJ', 'HH', 'EE', 'CC'], valves)
+
+score = solve(30, 'AA', valves, voi)
+print(score)
