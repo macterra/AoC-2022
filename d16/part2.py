@@ -34,7 +34,7 @@ def parse(lines):
             print('fail', line)
     return valves
 
-data = open('data', 'r').read()
+#data = open('data', 'r').read()
 lines = data.split('\n')
 valves = parse(lines)
 
@@ -96,13 +96,6 @@ def solve2(t1, mloc, t2, eloc, valves, voi):
             if score > max:
                 max = score
                 
-            dis1 = valves[mloc].shortest[id2]
-            dis2 = valves[eloc].shortest[id1]
-
-            score = solve2(t1-dis1-1, id2, t2-dis2-1, id1, valves, rest2)
-            if score > max:
-                max = score
-
     release = 0
 
     if t1 > 0:
