@@ -32,8 +32,7 @@ def makeRock(w, h, pattern):
     return rock
 
 data = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>"
-
-#data = open('data', 'r').read()
+data = open('data', 'r').read().strip()
 jets = list(data)
 
 rocks = []
@@ -51,7 +50,9 @@ def shift(rock, jet):
         if np.all(rock[:,-1] == 0):
             rock = np.roll(rock, 1, axis=1)
     else:
+        print("bad jet")
         exit()
+
     return rock
 
 template = np.full((20,7), 0)
@@ -95,6 +96,7 @@ def drop(chamber):
             break
         alt += 1
         
+    #print(ht-alt, rock)    
     chamber[alt-4:alt,] += rock
     #print(chamber)
     return chamber
@@ -103,4 +105,4 @@ for i in range(2022):
     chamber = drop(chamber)
     ht, _ = chamber.shape
     top = findTop(chamber)
-    print(i, ht, top, ht-top)
+    print(ht-top)
