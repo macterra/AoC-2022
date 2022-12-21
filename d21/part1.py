@@ -21,8 +21,6 @@ class Monkey:
         self.spec = spec
 
     def yell(self, monkeys):
-        print(self.name, len(self.spec))
-
         if len(self.spec) == 11:
             m1, op, m2 = self.spec.split(' ')
 
