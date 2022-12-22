@@ -51,7 +51,7 @@ voi = [id for id in valves if valves[id].rate > 0]
 
 print(voi)
 
-def solve2(t1, loc1, t2, loc2, valves, voi):
+def solve(t1, loc1, t2, loc2, valves, voi):
     if t1 < 1:
         return 0
 
@@ -61,22 +61,22 @@ def solve2(t1, loc1, t2, loc2, valves, voi):
         rest.remove(id)
 
         dis = valves[loc1].shortest[id]
-        score = solve2(t1-dis-1, id, t2, loc2, valves, rest)
+        score = solve(t1-dis-1, id, t2, loc2, valves, rest)
 
         if score > max:
             max = score
 
         dis = valves[loc2].shortest[id]
-        score = solve2(t2-dis-1, id, t1, loc1, valves, rest)
+        score = solve(t2-dis-1, id, t1, loc1, valves, rest)
 
         if score > max:
             max = score
 
     release = valves[loc1].rate * t1 
 
-    #print("solve2 {} {} {} {} {} {} {}".format(t1, loc1, t2, loc2, voi, release, max))
+    #print("solve {} {} {} {} {} {} {}".format(t1, loc1, t2, loc2, voi, release, max))
 
     return release + max
 
-score = solve2(26, 'AA', 26, 'AA', valves, voi)
+score = solve(26, 'AA', 26, 'AA', valves, voi)
 print(score)
