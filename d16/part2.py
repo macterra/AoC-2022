@@ -41,69 +41,40 @@ valves = parse(lines)
 graph = {}
 for id in valves:
     graph[id] = valves[id].exits
-    print(valves[id])
-print(graph)
 
 shortest = shortest_path_lengths(graph)
-print(shortest)
 
 for id in valves:
     valves[id].shortest = shortest[id]
-    print(shortest[id])
 
 voi = [id for id in valves if valves[id].rate > 0]
 
 print(voi)
 
-def solve(t, loc, valves, voi):
-    if t < 1:
+def solve2(t1, loc1, t2, loc2, valves, voi):
+    if t1 < 1:
         return 0
 
     max = 0
     for id in voi:
         rest = list(voi)
         rest.remove(id)
-        dis = valves[loc].shortest[id]
-        score = solve(t-dis-1, id, valves, rest)
+
+        dis = valves[loc1].shortest[id]
+        score = solve2(t1-dis-1, id, t2, loc2, valves, rest)
+
         if score > max:
             max = score
 
-    release = valves[loc].rate * t
-    print("solve {} {} {} {} {}".format(t, loc, voi, release, max))
+        dis = valves[loc2].shortest[id]
+        score = solve2(t2-dis-1, id, t1, loc1, valves, rest)
 
-    return release + max
+        if score > max:
+            max = score
 
-def solve2(t1, mloc, t2, eloc, valves, voi):
-    if t1 < 1:
-        return solve(t2, eloc, valves, voi)
+    release = valves[loc1].rate * t1 
 
-    if t2 < 1:
-        return solve(t1, mloc, valves, voi)
-
-    max = 0
-    for id1 in voi:
-        rest = list(voi)
-        rest.remove(id1)
-
-        for id2 in rest:
-            rest2 = list(rest)
-            rest2.remove(id2)
-
-            dis1 = valves[mloc].shortest[id1]
-            dis2 = valves[eloc].shortest[id2]
-
-            score = solve2(t1-dis1-1, id1, t2-dis2-1, id2, valves, rest2)
-            if score > max:
-                max = score
-                
-    release = 0
-
-    if t1 > 0:
-        release += valves[mloc].rate * t1 
-    if t2 > 0:
-        release += valves[eloc].rate * t2
-
-    print("solve2 {} {} {} {} {} {} {}".format(t1, mloc, t2, eloc, voi, release, max))
+    #print("solve2 {} {} {} {} {} {} {}".format(t1, loc1, t2, loc2, voi, release, max))
 
     return release + max
 
