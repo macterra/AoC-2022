@@ -14,8 +14,7 @@ data = """        ...#
         .#......
         ......#.
 
-10R5L5"""
-#10R5L5R10L4R5L5"""
+10R5L5R10L4R5L5"""
 
 class Map:
     def __init__(self, lines):
@@ -31,21 +30,6 @@ class Map:
         self.face = '>'
         self.trace = np.copy(self.grid)
         self.trace[self.y, self.x] = self.face
-
-        if w > h:
-            self.size = w//4
-        else:
-            self.size = h//4
-
-            self.faces = np.array(3,4)
-
-        self.tx = self.x//self.size
-        self.ty = 0
-
-        print('tx', self.tx)
-
-        self.A = self.grid[self.tx*self.size:(self.tx+1)*self.size]
-
 
     def __repr__(self) -> str:
         h, w = self.grid.shape
@@ -84,7 +68,6 @@ class Map:
             if next == '#':
                 break
             elif next == ' ':
-                self.wrap2(nx, ny)
                 nx, ny = self.wrap()
                 next = self.grid[ny, nx]
                 if next == '#':
@@ -95,14 +78,6 @@ class Map:
                 self.x += dx
                 self.y += dy
             self.trace[self.y, self.x] = self.face
-
-    def wrap2(self, x, y):
-        dtx = x//self.size - self.tx
-        dty = y//self.size
-        print('wrap2', self.x, self.y, x, y, dtx, dty)
-
-        if dtx == 1 and dty == 1: # D
-
 
     def wrap(self):
         if self.face == '>':
@@ -152,11 +127,238 @@ class Map:
         bonus = { '>': 0, 'v': 1, '<': 2, '^': 3}
         return (self.y+1) * 1000 + (self.x+1) * 4 + bonus[self.face]
 
+class Cube:
+    def __init__(self) -> None:
+        pass
+    
+    def read(self, map):
+        print(map.grid.shape)
+        print(map)
+        self.map = map
+        h, w = map.grid.shape
+        if w > h:
+            self.tsize = ts = w//4
+            self.tiles = np.full((3,4,ts,ts), ' ')
+            for row in range(3):
+                for col in range(4):
+                    self.tiles[row, col] = map.grid[row*ts:(row+1)*ts,col*ts:(col+1)*ts]
+                    print(row, col)
+                    print(self.tiles[row, col])
+            row = 0
+            col = map.x//ts
+            self.faces = {
+                'A': self.tiles[row,col],
+                'B': self.tiles[row+1,col-1],
+                'C': self.tiles[row+1,col],
+                'D': np.rot90(self.tiles[row+2,col+1]),
+                'E': self.tiles[row+2,col],
+                'F': np.rot90(self.tiles[row+1,col-2],2)
+            }
+            self.tile = 'A'
+            self.x = 0
+            self.y = 0
+            self.face = '>'
+        else:
+            self.tsize = w/4
+
+    def followPath(self, path):
+        print(path)
+        
+        directions = re.findall("(\d+)([LR])", path)
+        self.directions = [ (int(x), y) for x, y in directions]
+        print(self.directions)
+
+        for dis, dir in self.directions:
+            self.move(dis)
+            self.turn(dir)
+            print(self.x, self.y, self.face, self.tile)
+
+    def move(self, dis):
+        ts = self.tsize
+        deltas = { '>': (1, 0), '<': (-1, 0), 'v': (0, 1), '^': (0, -1) }
+        dx, dy = deltas[self.face]
+        grid = self.faces[self.tile]
+
+        print('move', dis, dx, dy)
+
+        for i in range(dis):
+            ny, nx = (self.y + dy), (self.x + dx)
+
+            if not (0 <= nx < ts and 0 <= ny < ts):
+                self.x, self.y, self.face, self.tile = self.wrap()
+                grid = self.faces[self.tile]
+                dx, dy = deltas[self.face]
+            else:
+                next = grid[ny, nx]
+                if next == '#':
+                    break
+                else:
+                    self.x += dx
+                    self.y += dy
+    
+    def wrap(self):
+        """        
+        A 
+            N: FS
+            S: CN
+            E: DN*
+            W: BN
+        B 
+            N: AW
+            S: EW*
+            E: CW
+            W: FW*
+        C 
+            N: AS
+            S: EN 
+            E: DW
+            W: BE
+        D 
+            N: AE*
+            S: EE
+            E: FE*
+            W: CE
+        E 
+            N: CS
+            S: FN
+            E: DS
+            W: BS*
+        F 
+            N: ES
+            S: AN
+            E: DE*
+            W: BW*
+        """
+
+        edge = self.tsize-1
+        nx = self.x
+        ny = self.y
+        nf = self.face
+
+        if self.tile == 'A':
+            if self.face == '^':
+                nt = 'F' #FS
+                ny = edge
+            elif self.face == 'v':
+                nt = 'C' #CN
+                ny = 0
+            elif self.face == '>':
+                nt = 'D' #DN*
+                nx = edge-self.y
+                ny = 0
+                nf = 'v'
+            elif self.face == '<':
+                nt = 'B' #BN
+                nx = self.y
+                ny = 0
+                nf = 'v'
+        elif self.tile == 'B':
+            if self.face == '^':
+                nt = 'A' #AW
+                nx = 0
+                ny = self.x
+                nf = '>'
+            elif self.face == 'v':
+                nt = 'E' #EW*
+                nx = 0
+                ny = edge-self.x
+                nf = '>'
+            elif self.face == '>':
+                nt = 'C' #CW
+                nx = 0
+                nf = '>'
+            elif self.face == '<':
+                nt = 'F' #FW*
+                nx = 0
+                ny = edge-self.y
+                nf = '>'
+        elif self.tile == 'C':
+            if self.face == '^':
+                nt = 'A' #AS
+                ny = edge
+            elif self.face == 'v':
+                nt = 'E' #EN
+                ny = 0
+            elif self.face == '>':
+                nt = 'D' #DW
+                nx = 0
+            elif self.face == '<':
+                nt = 'B' #BE
+                ny = edge
+        elif self.tile == 'D':
+            if self.face == '^':
+                nt = 'A' # AE*
+                nx = edge
+                ny = edge-self.x
+                nf = '<'
+            elif self.face == 'v':
+                nt = 'E' #EE
+                nx = edge
+                ny = self.x
+                nf = '<'
+            elif self.face == '>':
+                nt = 'F' #FE*
+                nx = edge
+                ny = edge-self.x
+                nf = '<'
+            elif self.face == '<':
+                nt = 'C' #CE
+                nx = edge
+                nf = '<'
+        elif self.tile == 'E':
+            if self.face == '^':
+                nt = 'C' #CS                
+                ny = edge
+            elif self.face == 'v':
+                nt = 'F' #FN
+                ny = 0
+            elif self.face == '>':
+                nt = 'D' #DS
+                nx = self.y
+                ny = edge
+                nf = '^'
+            elif self.face == '<':
+                nt = 'B' #BS*
+                nx = edge-self.y
+                ny = edge
+                nf = '^'
+        elif self.tile == 'F':
+            if self.face == '^':
+                nt = 'E' #ES
+                ny = edge
+                nf = '^'
+            elif self.face == 'v':
+                nt = 'A' #AN
+                ny = 0
+            elif self.face == '>':
+                nt = 'D' #DE*
+                nx = edge
+                ny = edge-self.x
+                nf = '<'
+            elif self.face == '<':
+                nt = 'B' #BW*
+                nx = 0
+                ny = edge-self.x
+                nf = '>'
+        
+        if self.faces[nt][ny,nx] == '#':
+            return self.x, self.y, self.face, self.tile
+        else:
+            return nx, ny, nf, nt
+
+    def turn(self, dir):
+        self.map.face = self.face
+        self.map.turn(dir)
+        self.face = self.map.face
+
 #data = open('data', 'r').read()
 grid, path = data.split('\n\n')
 lines = grid.split('\n')
 map = Map(lines)
-print(map.grid.shape)
-map.followPath(path)
+cube = Cube()
+cube.read(map)
+cube.followPath(path)
+
+# map.followPath(path)
 # print(map.x+1, map.y+1)
 # print(map.password())
