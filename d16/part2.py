@@ -1,4 +1,5 @@
 import re
+from itertools import combinations
 from shortest import shortest_path_lengths
 
 data="""Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
@@ -34,7 +35,7 @@ def parse(lines):
             print('fail', line)
     return valves
 
-#data = open('data', 'r').read()
+data = open('data', 'r').read()
 lines = data.split('\n')
 valves = parse(lines)
 
@@ -47,36 +48,34 @@ shortest = shortest_path_lengths(graph)
 for id in valves:
     valves[id].shortest = shortest[id]
 
-voi = [id for id in valves if valves[id].rate > 0]
+voi = set([id for id in valves if valves[id].rate > 0])
 
 print(voi)
 
-def solve(t1, loc1, t2, loc2, valves, voi):
-    if t1 < 1:
+def solve(t, loc, valves, voi):
+    if t < 1:
         return 0
 
     max = 0
     for id in voi:
         rest = list(voi)
         rest.remove(id)
-
-        dis = valves[loc1].shortest[id]
-        score = solve(t1-dis-1, id, t2, loc2, valves, rest)
-
+        dis = valves[loc].shortest[id]
+        score = solve(t-dis-1, id, valves, rest)
         if score > max:
             max = score
 
-        dis = valves[loc2].shortest[id]
-        score = solve(t2-dis-1, id, t1, loc1, valves, rest)
-
-        if score > max:
-            max = score
-
-    release = valves[loc1].rate * t1 
-
-    #print("solve {} {} {} {} {} {} {}".format(t1, loc1, t2, loc2, voi, release, max))
+    release = valves[loc].rate * t
+    #print("solve {} {} {} {} {}".format(t, loc, voi, release, max))
 
     return release + max
 
-score = solve(26, 'AA', 26, 'AA', valves, voi)
-print(score)
+max = 0
+for i in range(1,8):
+    for voi1 in combinations(voi, i):
+        a = solve(26, 'AA', valves, voi1)
+        voi2 = voi.difference(voi1)
+        b = solve(26, 'AA', valves, voi2)
+        if a+b > max:
+            max = a+b
+            print(max, a, b, a+b, voi1, voi2)
