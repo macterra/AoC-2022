@@ -154,6 +154,14 @@ class Cube:
                 'E': self.tiles[row+2,col],
                 'F': np.rot90(self.tiles[row+1,col-2],2)
             }
+            self.invfaces = {
+                'A': (row,col,0),
+                'B': (row+1,col-1,0),
+                'C': (row+1,col,0),
+                'D': (row+2,col+1,1),
+                'E': (row+2,col,0),
+                'F': (row+1,col-2,2)
+            }
             self.tile = 'A'
             self.x = 0
             self.y = 0
@@ -172,7 +180,15 @@ class Cube:
             self.move(dis)
             self.turn(dir)
             print(self.x, self.y, self.face, self.tile)
-
+            
+        match = re.search(r"(\d+)$", path)
+        print(path, match)
+        if match:
+            dis = int(match.group(1))
+            self.move(dis)
+            
+        print('final', self.x, self.y, self.face, self.tile, self.map.password())
+            
     def move(self, dis):
         ts = self.tsize
         deltas = { '>': (1, 0), '<': (-1, 0), 'v': (0, 1), '^': (0, -1) }
@@ -195,6 +211,15 @@ class Cube:
                 else:
                     self.x += dx
                     self.y += dy
+
+            row, col, rot = self.invfaces[self.tile]
+            x = col*ts + self.x
+            y = row*ts + self.y
+            self.map.x = x
+            self.map.y = y
+            self.map.face = self.face
+            self.map.trace[y, x] = self.face
+            print(self.map)
     
     def wrap(self):
         """        
