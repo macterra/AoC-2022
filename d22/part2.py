@@ -136,6 +136,12 @@ class Cube:
         print(map)
         self.map = map
         h, w = map.grid.shape
+        self.tile = 'A'
+        self.x = 0
+        self.y = 0
+        self.face = '>'
+        self.crossed = set()
+
         if w > h:
             self.tsize = ts = w//4
             self.tiles = np.full((3,4,ts,ts), ' ')
@@ -162,12 +168,30 @@ class Cube:
                 'E': (row+2,col,0),
                 'F': (row+1,col-2,2)
             }
-            self.tile = 'A'
-            self.x = 0
-            self.y = 0
-            self.face = '>'
         else:
-            self.tsize = w/4
+            self.tsize = ts = h//4
+            self.tiles = np.full((4,3,ts,ts), ' ')
+            for row in range(4):
+                for col in range(3):
+                    self.tiles[row, col] = map.grid[row*ts:(row+1)*ts,col*ts:(col+1)*ts]
+            row = 0
+            col = map.x//ts
+            self.faces = {
+                'A': self.tiles[row,col],
+                'B': np.rot90(self.tiles[row+2,col-1],3),
+                'C': self.tiles[row+1,col],
+                'D': np.rot90(self.tiles[row,col+1], 3),
+                'E': self.tiles[row+2,col],
+                'F': np.rot90(self.tiles[row+3,col-1],1)
+            }
+            self.invfaces = {
+                'A': (row,col,0),
+                'B': (row+2,col-1,3),
+                'C': (row+1,col,0),
+                'D': (row,col+1,3),
+                'E': (row+2,col,0),
+                'F': (row+3,col-1,1)
+            }
 
     def followPath(self, path):
         print(path)
@@ -188,6 +212,7 @@ class Cube:
             self.move(dis)
             
         print('final', self.x, self.y, self.face, self.tile, self.map.password())
+        print(sorted(self.crossed))
             
     def move(self, dis):
         ts = self.tsize
@@ -201,6 +226,7 @@ class Cube:
             ny, nx = (self.y + dy), (self.x + dx)
 
             if not (0 <= nx < ts and 0 <= ny < ts):
+                self.crossed.add(self.tile + self.face)
                 self.x, self.y, self.face, self.tile = self.wrap()
                 grid = self.faces[self.tile]
                 dx, dy = deltas[self.face]
@@ -219,7 +245,7 @@ class Cube:
             self.map.y = y
             self.map.face = self.face
             self.map.trace[y, x] = self.face
-            print(self.map)
+            #print(self.map)
     
     def wrap(self):
         """        
@@ -309,7 +335,7 @@ class Cube:
                 nx = 0
             elif self.face == '<':
                 nt = 'B' #BE
-                ny = edge
+                nx = edge
         elif self.tile == 'D':
             if self.face == '^':
                 nt = 'A' # AE*
@@ -324,7 +350,7 @@ class Cube:
             elif self.face == '>':
                 nt = 'F' #FE*
                 nx = edge
-                ny = edge-self.x
+                ny = edge-self.y
                 nf = '<'
             elif self.face == '<':
                 nt = 'C' #CE
@@ -358,12 +384,12 @@ class Cube:
             elif self.face == '>':
                 nt = 'D' #DE*
                 nx = edge
-                ny = edge-self.x
+                ny = edge-self.y
                 nf = '<'
             elif self.face == '<':
                 nt = 'B' #BW*
                 nx = 0
-                ny = edge-self.x
+                ny = edge-self.y
                 nf = '>'
         
         if self.faces[nt][ny,nx] == '#':
@@ -376,14 +402,10 @@ class Cube:
         self.map.turn(dir)
         self.face = self.map.face
 
-#data = open('data', 'r').read()
+data = open('data', 'r').read()
 grid, path = data.split('\n\n')
 lines = grid.split('\n')
 map = Map(lines)
 cube = Cube()
 cube.read(map)
 cube.followPath(path)
-
-# map.followPath(path)
-# print(map.x+1, map.y+1)
-# print(map.password())
