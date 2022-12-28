@@ -1,5 +1,5 @@
 import re
-from collections import deque
+import heapq
 
 data = """\
 Blueprint 1: Each ore robot minutess 4 ore. Each clay robot minutess 2 ore. Each obsidian robot minutess 3 ore and 14 clay. Each geode robot minutess 2 ore and 7 obsidian.
@@ -20,13 +20,14 @@ def solve(costs):
     maxobsBots = geoobsCost
     
     state = (1, 0, 0, 0, 0, 0, 0, 0)
-    pqueue = deque([(0, state)])
+    pqueue = [(0, state)]
+    heapq.heapify(pqueue)
     visited = set()
 
     maxt = 24
 
     while len(pqueue) > 0:
-        minutes, state = pqueue.popleft()
+        minutes, state = heapq.heappop(pqueue)
 
         if minutes > maxt:
             continue
@@ -61,7 +62,7 @@ def solve(costs):
             ncla = cla + t*claBots
             nobs = obs + t*obsBots
             ngeo = geo + t*geoBots
-            pqueue.append((minutes+t, (oreBots+1, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
+            heapq.heappush(pqueue, (minutes+t, (oreBots+1, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
 
         if claBots < maxclaBots:
             needore = claoreCost - ore
@@ -70,7 +71,7 @@ def solve(costs):
             ncla = cla + t*claBots
             nobs = obs + t*obsBots
             ngeo = geo + t*geoBots
-            pqueue.append((minutes+t, (oreBots, claBots+1, obsBots, geoBots, nore, ncla, nobs, ngeo)))
+            heapq.heappush(pqueue, (minutes+t, (oreBots, claBots+1, obsBots, geoBots, nore, ncla, nobs, ngeo)))
 
         if claBots > 0 and obsBots < maxobsBots:
             needore = obsoreCost - ore
@@ -80,7 +81,7 @@ def solve(costs):
             ncla = cla + t*claBots - obsclaCost
             nobs = obs + t*obsBots
             ngeo = geo + t*geoBots
-            pqueue.append((minutes+t, (oreBots, claBots, obsBots+1, geoBots, nore, ncla, nobs, ngeo)))
+            heapq.heappush(pqueue, (minutes+t, (oreBots, claBots, obsBots+1, geoBots, nore, ncla, nobs, ngeo)))
 
         if obsBots > 0:
             needore = geooreCost - ore
@@ -90,14 +91,14 @@ def solve(costs):
             ncla = cla + t*claBots
             nobs = obs + t*obsBots - geoobsCost
             ngeo = geo + t*geoBots
-            pqueue.append((minutes+t, (oreBots, claBots, obsBots, geoBots+1, nore, ncla, nobs, ngeo)))
+            heapq.heappush(pqueue, (minutes+t, (oreBots, claBots, obsBots, geoBots+1, nore, ncla, nobs, ngeo)))
 
         if geoBots > 0:
             nore = ore + oreBots
             ncla = cla + claBots
             nobs = obs + obsBots
             ngeo = geo + geoBots
-            pqueue.append((minutes+1, (oreBots, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
+            heapq.heappush(pqueue, (minutes+1, (oreBots, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
 
     print(maxgeostate, maxgeo)
     print(len(visited), (1,4,2,2,6,41,8,9) in visited)
