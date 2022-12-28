@@ -1,45 +1,25 @@
 import re
 from collections import deque
 
-data = """Blueprint 1: Each ore robot minutess 4 ore. Each clay robot minutess 2 ore. Each obsidian robot minutess 3 ore and 14 clay. Each geode robot minutess 2 ore and 7 obsidian.
+data = """\
+Blueprint 1: Each ore robot minutess 4 ore. Each clay robot minutess 2 ore. Each obsidian robot minutess 3 ore and 14 clay. Each geode robot minutess 2 ore and 7 obsidian.
 Blueprint 2: Each ore robot minutess 2 ore. Each clay robot minutess 3 ore. Each obsidian robot minutess 3 ore and 8 clay. Each geode robot minutess 3 ore and 12 obsidian."""
 
 class Blueprint:
     def __init__(self, line):
         nums = [int(x) for x in re.findall(r'(\d+)', line)]
-        self.id = nums[0]
-        self.ore = nums[1]
-        self.clay = nums[2]
-        self.obsidian = (nums[3], nums[4])
-        self.geode = (nums[5], nums[6])
+        self.id = nums.pop(0)
+        self.costs = nums
 
-    def __repr__(self) -> str:
-        return "Blueprint {}: {} {} {} {}".format(self.id, self.ore, self.clay, self.obsidian, self.geode)
-
-def solve(bp):
+def solve(costs):
     maxgeo = 0
     maxgeostate = ()
-
-    oreBots = 1
-    claBots = 0
-    obsBots = 0
-    geoBots = 0
-
-    ore = 0
-    cla = 0
-    obs = 0
-    geo = 0
-
-    state = (oreBots, claBots, obsBots, geoBots, ore, cla, obs, geo)
-
-    oreoreCost = bp.ore
-    claoreCost = bp.clay
-    obsoreCost, obsclaCost = bp.obsidian
-    geooreCost, geoobsCost = bp.geode
+    oreoreCost, claoreCost, obsoreCost, obsclaCost, geooreCost, geoobsCost = costs
     maxore = max(oreoreCost, claoreCost, obsoreCost, geooreCost)
     maxcla = obsclaCost
     maxobs = geoobsCost
-
+    
+    state = (1, 0, 0, 0, 0, 0, 0, 0)
     pqueue = deque([(0, state)])
     visited = set()
 
@@ -98,4 +78,4 @@ blueprints = [ Blueprint(line) for line in lines ]
 
 print(blueprints)
 
-print(solve(blueprints[0]))
+print(solve(blueprints[0].costs))
