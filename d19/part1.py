@@ -1,9 +1,8 @@
 import re
-import heapq
-from collections import defaultdict
+from collections import deque
 
-data = """Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
-Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian."""
+data = """Blueprint 1: Each ore robot minutess 4 ore. Each clay robot minutess 2 ore. Each obsidian robot minutess 3 ore and 14 clay. Each geode robot minutess 2 ore and 7 obsidian.
+Blueprint 2: Each ore robot minutess 2 ore. Each clay robot minutess 3 ore. Each obsidian robot minutess 3 ore and 8 clay. Each geode robot minutess 3 ore and 12 obsidian."""
 
 class Blueprint:
     def __init__(self, line):
@@ -18,8 +17,6 @@ class Blueprint:
         return "Blueprint {}: {} {} {} {}".format(self.id, self.ore, self.clay, self.obsidian, self.geode)
 
 def solve(bp):
-    costs = defaultdict(int)
-
     maxgeo = 0
     maxgeostate = ()
 
@@ -43,14 +40,13 @@ def solve(bp):
     maxcla = obsclaCost
     maxobs = geoobsCost
 
-    pqueue = [(0, state)]
-    heapq.heapify(pqueue)
+    pqueue = deque([(0, state)])
     visited = set()
 
     while len(pqueue) > 0:
-        cost, state = heapq.heappop(pqueue)
+        minutes, state = pqueue.popleft()
         
-        #print(cost, state, len(pqueue), maxgeo)
+        #print(minutes, state, len(pqueue), maxgeo)
 
         if (state) in visited:
             continue
@@ -59,38 +55,40 @@ def solve(bp):
 
         oreBots, claBots, obsBots, geoBots, ore, cla, obs, geo = state
 
+        if geo > maxgeo:
+            maxgeo = geo
+            maxgeostate = state
+            print(minutes, maxgeo, maxgeostate)
+
+        if minutes == 24:
+            continue
+
+        timeleft = 24-minutes
+
+        if (geo + timeleft * geoBots) < maxgeo:
+            continue
+
         ore += oreBots
         cla += claBots
         obs += obsBots
         geo += geoBots
 
-        if geo > maxgeo:
-            maxgeo = geo
-            maxgeostate = state
-
-        if cost == 24:
-            continue
-
-        timeleft = 24-cost
-
-        if (geo + timeleft * geoBots) < maxgeo:
-            continue
-
-        heapq.heappush(pqueue, (cost+1, (oreBots, claBots, obsBots, geoBots, ore, cla, obs, geo)))
+        pqueue.append((minutes+1, (oreBots, claBots, obsBots, geoBots, ore, cla, obs, geo)))
 
         if oreoreCost < ore and oreBots < maxore:
-            heapq.heappush(pqueue, (cost+1, (oreBots+1, claBots, obsBots, geoBots, ore-oreoreCost, cla, obs, geo)))
+            pqueue.append((minutes+1, (oreBots+1, claBots, obsBots, geoBots, ore-oreoreCost, cla, obs, geo)))
 
         if claoreCost < ore and claBots < maxcla:
-            heapq.heappush(pqueue, (cost+1, (oreBots, claBots+1, obsBots, geoBots, ore-claoreCost, cla, obs, geo)))
+            pqueue.append((minutes+1, (oreBots, claBots+1, obsBots, geoBots, ore-claoreCost, cla, obs, geo)))
 
         if obsoreCost < ore and obsclaCost < cla and obsBots < maxobs:
-            heapq.heappush(pqueue, (cost+1, (oreBots, claBots, obsBots+1, geoBots, ore-obsoreCost, cla-obsclaCost, obs, geo)))
+            pqueue.append((minutes+1, (oreBots, claBots, obsBots+1, geoBots, ore-obsoreCost, cla-obsclaCost, obs, geo)))
 
         if geooreCost < ore and geoobsCost < obs:
-            heapq.heappush(pqueue, (cost+1, (oreBots, claBots, obsBots, geoBots+1, ore-geooreCost, cla, obs-geoobsCost, geo)))
+            pqueue.append((minutes+1, (oreBots, claBots, obsBots, geoBots+1, ore-geooreCost, cla, obs-geoobsCost, geo)))
         
     print(maxgeostate, maxgeo)
+    print((1,4,2,2,6,41,8,9) in visited)
     return maxgeo
 
 #data = open('data', 'r').read()
