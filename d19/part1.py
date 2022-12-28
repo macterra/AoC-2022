@@ -15,9 +15,9 @@ def solve(costs):
     maxgeo = 0
     maxgeostate = ()
     oreoreCost, claoreCost, obsoreCost, obsclaCost, geooreCost, geoobsCost = costs
-    maxore = max(oreoreCost, claoreCost, obsoreCost, geooreCost)
-    maxcla = obsclaCost
-    maxobs = geoobsCost
+    maxoreBots = max(oreoreCost, claoreCost, obsoreCost, geooreCost)
+    maxclaBots = obsclaCost
+    maxobsBots = geoobsCost
     
     state = (1, 0, 0, 0, 0, 0, 0, 0)
     pqueue = deque([(0, state)])
@@ -45,16 +45,16 @@ def solve(costs):
             maxgeostate = state
             print(minutes, maxgeo, maxgeostate)
 
-        if claBots == 0 and (obsclaCost + geoobsCost + minutes) > maxt:
+        if claBots == 0 and (obsclaCost + geoobsCost + minutes + 3) > maxt:
             continue
 
-        if obsBots == 0 and (geoobsCost + minutes) > maxt:
+        if obsBots == 0 and (geoobsCost + minutes + 2) > maxt:
             continue
 
-        if geoBots == 0 and (maxgeo + minutes) > maxt:
+        if geoBots == 0 and (maxgeo + minutes + 1) > maxt:
             continue
 
-        if oreBots < maxore:
+        if oreBots < maxoreBots:
             needore = oreoreCost - ore
             t = max(0, int(needore/oreBots + 0.5)) + 1
             nore = ore + t*oreBots - oreoreCost
@@ -63,7 +63,7 @@ def solve(costs):
             ngeo = geo + t*geoBots
             pqueue.append((minutes+t, (oreBots+1, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
 
-        if claBots < maxcla:
+        if claBots < maxclaBots:
             needore = claoreCost - ore
             t = max(0, int(needore/oreBots + 0.5)) + 1
             nore = ore + t*oreBots - claoreCost
@@ -72,7 +72,7 @@ def solve(costs):
             ngeo = geo + t*geoBots
             pqueue.append((minutes+t, (oreBots, claBots+1, obsBots, geoBots, nore, ncla, nobs, ngeo)))
 
-        if claBots > 0 and obsBots < maxobs:
+        if claBots > 0 and obsBots < maxobsBots:
             needore = obsoreCost - ore
             needcla = obsclaCost - cla
             t = max(0, int(needore/oreBots + 0.5), int(needcla/claBots + 0.5)) + 1
@@ -100,6 +100,7 @@ def solve(costs):
             pqueue.append((minutes+1, (oreBots, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
 
     print(maxgeostate, maxgeo)
+    print(len(visited), (1,4,2,2,6,41,8,9) in visited)
     return maxgeo
 
 #data = open('data', 'r').read()
