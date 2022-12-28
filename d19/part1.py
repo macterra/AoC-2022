@@ -23,10 +23,12 @@ def solve(costs):
     pqueue = deque([(0, state)])
     visited = set()
 
+    maxt = 24
+
     while len(pqueue) > 0:
         minutes, state = pqueue.popleft()
 
-        if minutes > 24:
+        if minutes > maxt:
             continue
         
         #print(minutes, state, len(pqueue), maxgeo)
@@ -43,14 +45,23 @@ def solve(costs):
             maxgeostate = state
             print(minutes, maxgeo, maxgeostate)
 
-        # if obsBots < maxobs:
-        #     needore = oreoreCost - ore
-        #     t = max(0, int(needore/oreBots + 0.5)) + 1
-        #     nore = ore + t*oreBots - oreoreCost
-        #     ncla = cla + t*claBots
-        #     nobs = obs + t*obsBots
-        #     ngeo = geo + t*geoBots
-        #     pqueue.append((minutes+t, (oreBots+1, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
+        if claBots == 0 and (obsclaCost + geoobsCost + minutes) > maxt:
+            continue
+
+        if obsBots == 0 and (geoobsCost + minutes) > maxt:
+            continue
+
+        if geoBots == 0 and (maxgeo + minutes) > maxt:
+            continue
+
+        if oreBots < maxore:
+            needore = oreoreCost - ore
+            t = max(0, int(needore/oreBots + 0.5)) + 1
+            nore = ore + t*oreBots - oreoreCost
+            ncla = cla + t*claBots
+            nobs = obs + t*obsBots
+            ngeo = geo + t*geoBots
+            pqueue.append((minutes+t, (oreBots+1, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
 
         if claBots < maxcla:
             needore = claoreCost - ore
