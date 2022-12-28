@@ -33,7 +33,7 @@ def solve(costs):
         
         #print(minutes, state, len(pqueue), maxgeo)
 
-        if (state) in visited:
+        if state in visited:
             continue
 
         visited.add(state)
@@ -54,23 +54,15 @@ def solve(costs):
         if geoBots == 0 and (maxgeo + minutes + 1) > maxt:
             continue
 
-        if oreBots < maxoreBots:
-            needore = oreoreCost - ore
-            t = max(0, int(needore/oreBots + 0.5)) + 1
-            nore = ore + t*oreBots - oreoreCost
+        if obsBots > 0:
+            needore = geooreCost - ore
+            needobs = geoobsCost - obs
+            t = max(0, int(needore/oreBots + 0.5), int(needobs/obsBots + 0.5)) + 1
+            nore = ore + t*oreBots - geooreCost
             ncla = cla + t*claBots
-            nobs = obs + t*obsBots
+            nobs = obs + t*obsBots - geoobsCost
             ngeo = geo + t*geoBots
-            pqueue.append((minutes+t, (oreBots+1, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
-
-        if claBots < maxclaBots:
-            needore = claoreCost - ore
-            t = max(0, int(needore/oreBots + 0.5)) + 1
-            nore = ore + t*oreBots - claoreCost
-            ncla = cla + t*claBots
-            nobs = obs + t*obsBots
-            ngeo = geo + t*geoBots
-            pqueue.append((minutes+t, (oreBots, claBots+1, obsBots, geoBots, nore, ncla, nobs, ngeo)))
+            pqueue.append((minutes+t, (oreBots, claBots, obsBots, geoBots+1, nore, ncla, nobs, ngeo)))
 
         if claBots > 0 and obsBots < maxobsBots:
             needore = obsoreCost - ore
@@ -82,15 +74,23 @@ def solve(costs):
             ngeo = geo + t*geoBots
             pqueue.append((minutes+t, (oreBots, claBots, obsBots+1, geoBots, nore, ncla, nobs, ngeo)))
 
-        if obsBots > 0:
-            needore = geooreCost - ore
-            needobs = geoobsCost - obs
-            t = max(0, int(needore/oreBots + 0.5), int(needobs/obsBots + 0.5)) + 1
-            nore = ore + t*oreBots - geooreCost
+        if claBots < maxclaBots:
+            needore = claoreCost - ore
+            t = max(0, int(needore/oreBots + 0.5)) + 1
+            nore = ore + t*oreBots - claoreCost
             ncla = cla + t*claBots
-            nobs = obs + t*obsBots - geoobsCost
+            nobs = obs + t*obsBots
             ngeo = geo + t*geoBots
-            pqueue.append((minutes+t, (oreBots, claBots, obsBots, geoBots+1, nore, ncla, nobs, ngeo)))
+            pqueue.append((minutes+t, (oreBots, claBots+1, obsBots, geoBots, nore, ncla, nobs, ngeo)))
+
+        if oreBots < maxoreBots:
+            needore = oreoreCost - ore
+            t = max(0, int(needore/oreBots + 0.5)) + 1
+            nore = ore + t*oreBots - oreoreCost
+            ncla = cla + t*claBots
+            nobs = obs + t*obsBots
+            ngeo = geo + t*geoBots
+            pqueue.append((minutes+t, (oreBots+1, claBots, obsBots, geoBots, nore, ncla, nobs, ngeo)))
 
         if geoBots > 0:
             nore = ore + oreBots
