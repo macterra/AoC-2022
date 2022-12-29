@@ -11,7 +11,7 @@ class Blueprint:
         self.id = nums.pop(0)
         self.costs = nums
 
-def solve(costs):
+def solve(maxt, costs):
     maxgeo = 0
     maxgeostate = ()
     oreoreCost, claoreCost, obsoreCost, obsclaCost, geooreCost, geoobsCost = costs
@@ -22,8 +22,6 @@ def solve(costs):
     state = (1, 0, 0, 0, 0, 0, 0, 0)
     pqueue = deque([(0, state)])
     visited = set()
-
-    maxt = 24
 
     while len(pqueue) > 0:
         minutes, state = pqueue.popleft()
@@ -54,7 +52,7 @@ def solve(costs):
         if geoBots == 0 and (maxgeo + minutes + 1) > maxt:
             continue
 
-        if obsBots > 0:
+        if obsBots > 0: # make a geode bot
             needore = geooreCost - ore
             needobs = geoobsCost - obs
             t = 1 + max(0, int(needore/oreBots + 0.5), int(needobs/obsBots + 0.5))
@@ -65,7 +63,7 @@ def solve(costs):
                 obs + t*obsBots - geoobsCost, 
                 geo + t*geoBots)))
 
-        if claBots > 0 and obsBots < maxobsBots:
+        if claBots > 0 and obsBots < maxobsBots: # make an obsidian bot
             needore = obsoreCost - ore
             needcla = obsclaCost - cla
             t = 1 + max(0, int(needore/oreBots + 0.5), int(needcla/claBots + 0.5))
@@ -76,7 +74,7 @@ def solve(costs):
                 obs + t*obsBots, 
                 geo + t*geoBots)))
 
-        if claBots < maxclaBots:
+        if claBots < maxclaBots: # make a clay bot
             needore = claoreCost - ore
             t = 1 + max(0, int(needore/oreBots + 0.5))
             pqueue.append((minutes+t, (
@@ -86,7 +84,7 @@ def solve(costs):
                 obs + t*obsBots, 
                 geo + t*geoBots)))
 
-        if oreBots < maxoreBots:
+        if oreBots < maxoreBots: # make an ore bot
             needore = oreoreCost - ore
             t = 1 + max(0, int(needore/oreBots + 0.5))
             pqueue.append((minutes+t, (
@@ -96,13 +94,14 @@ def solve(costs):
                 obs + t*obsBots, 
                 geo + t*geoBots)))
 
-        if geoBots > 0:
-            pqueue.append((minutes+1, (
+        if geoBots > 0: # just collect geodes until end
+            t = maxt - minutes
+            pqueue.append((minutes+t, (
                 oreBots, claBots, obsBots, geoBots, 
-                ore + oreBots, 
-                cla + claBots, 
-                obs + obsBots, 
-                geo + geoBots)))
+                ore + t*oreBots, 
+                cla + t*claBots, 
+                obs + t*obsBots, 
+                geo + t*geoBots)))
 
     print(maxgeostate, maxgeo)
     print(len(visited), (1,4,2,2,6,41,8,9) in visited)
@@ -112,4 +111,4 @@ def solve(costs):
 lines = data.split('\n')
 blueprints = [ Blueprint(line) for line in lines ]
 
-print(solve(blueprints[0].costs))
+print(solve(24, blueprints[0].costs))
